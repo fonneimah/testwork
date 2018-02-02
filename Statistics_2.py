@@ -1,22 +1,14 @@
 import requests, json, re
 
 #GET /repos/:owner/:repo/pulls
-ans = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=closed&per_page=100')
-print(ans.headers['Link'])
-header = ans.headers['Link'].rpartition('&')
-s_regex = re.compile(r'\d+')
-needed_s = s_regex.search(header[2])
-lastPage = needed_s.group()
-print("Last page is: " + lastPage)
+def totalCount(r):
+	header = r.rpartition('&')
+	s_regex = re.compile(r'\d+')
+	needed_s = s_regex.search(header[2])
+	result = needed_s.group()
+	return result
 
-ans = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=closed&per_page=100&page=%s'%(lastPage))
-rawData = json.loads(ans.text)
-el = 0
-count = 0
-for i in rawData:
-	if rawData[el]['state'] == 'closed':
-		count += 1
-	el +=1
-
-totalClosedPulls = ((int(lastPage) - 1) * 100) + count
-print("Total closed pulls: %d" % (totalClosedPulls))
+open_pulls = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=open&per_page=1')
+closed_pulls = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=closed&per_page=1')
+print("Total open pulls: %s" %(totalCount(open_pulls.headers['Link'])))
+print("Total closed pulls: %s" %(totalCount(closed_pulls.headers['Link'])))
