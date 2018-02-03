@@ -1,19 +1,14 @@
-import requests, json, re
+import requests, re
 
 def totalCount(r):
-	header = r.rpartition('&')
-	s_regex = re.compile(r'\d+')
-	needed_s = s_regex.search(header[2])
-	result = needed_s.group()
-	return result
+	regex = re.compile(r'("total_count":)(\d+)')
+	data = regex.search(r)
+	count = data.group(2)
+	return count
 
-open_pulls = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=open&per_page=1')
-closed_pulls = requests.get('https://api.github.com/repos/googlechrome/puppeteer/pulls?state=closed&per_page=1')
-print("Total open pulls: %s" %(totalCount(open_pulls.headers['Link'])))
-print("Total closed pulls: %s" %(totalCount(closed_pulls.headers['Link'])))
+open_pull = requests.get('https://api.github.com/search/issues?q=repo:googlechrome/puppeteer+type:pr+state:open')
+closed_pull = requests.get('https://api.github.com/search/issues?q=repo:googlechrome/puppeteer+type:pr+state:closed')
+open_issues = requests.get('https://api.github.com/search/issues?q=repo:googlechrome/puppeteer+type:issue+state:open')
+closed_issues = requests.get('https://api.github.com/search/issues?q=repo:googlechrome/puppeteer+type:issue+state:closed')
 
-ans = requests.get('https://api.github.com/repos/googlechrome/puppeteer')
-regex = re.compile(r'("open_issues_count":)(\d+)')
-data = regex.search(ans.text)
-open_issues_count = data.group(2)
-print("Open issues count: %s" % (open_issues_count))
+print("Total open pulls: %s\nTotal closed pulls: %s\nTotal open issues: %s\nTotal closed issues: %s" % (totalCount(open_pull.text), totalCount(closed_pull.text), totalCount(open_issues.text), totalCount(closed_issues.text)))
